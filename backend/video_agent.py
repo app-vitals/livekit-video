@@ -89,12 +89,15 @@ class VideoAgent(Agent):
         self.video_stream: Optional[rtc.VideoStream] = None
 
     async def close(self) -> None:
-        if self.video_stream:
-            await self.video_stream.aclose()
-            self.video_stream = None
+        await self.close_video_stream()
         if self.current_trace:
             self.current_trace = None
         _langfuse.flush()
+
+    async def close_video_stream(self) -> None:
+        if self.video_stream:
+            await self.video_stream.aclose()
+            self.video_stream = None
 
     async def on_enter(self) -> None:
         # Just generate a basic intro without video reference
@@ -232,7 +235,7 @@ class VideoAgent(Agent):
 
     async def read_video_stream(self, video_stream: rtc.VideoStream) -> None:
         # close open streams
-        await self.close()
+        await self.close_video_stream()
         self.video_stream = video_stream
 
         logger.info("Starting video frame capture")

@@ -20,6 +20,39 @@ The application consists of three main components:
 2. **Frontend (React)**: User interface built with LiveKit Components
 3. **Knowledge Base**: Markdown files providing contextual information
 
+```mermaid
+sequenceDiagram
+    participant F as Frontend (React)
+    participant API as Backend API (FastAPI)
+    participant LK as LiveKit Server
+    participant A as Video Agent (LiveKit Agent)
+
+    F->>F: User enters name and clicks Connect
+    F->>API: GET /api/get-token?participant=name
+    API->>LK: Create room with UUID
+    API->>API: Generate access token with room permissions
+    API-->>F: Return {token, url}
+
+    F->>LK: Connect to LiveKit room with token
+    LK->>A: Agent detects new participant
+    A->>A: Initialize VideoAgent with instructions
+    A-->>F: Send greeting via TTS
+
+    Note over F,A: Video Conference Session
+    F->>LK: Share screen (optional)
+    LK->>A: Subscribe to screen share track
+    A->>A: Capture video frames (1 fps)
+
+    F->>LK: Send audio (user speech)
+    A->>A: STT - Convert speech to text
+    A->>A: LLM - Process with video frames
+    A->>A: TTS - Convert response to audio
+    A-->>F: Send audio response via LiveKit
+
+    F->>LK: Disconnect
+    A->>A: Clean up resources and exit
+```
+
 ## Quick Start
 
 ### Prerequisites
